@@ -1,6 +1,7 @@
 import express from "express";
 import _ from "lodash";
 import { Client } from "@notionhq/client";
+import json2emap from "json2emap";
 
 const notionClient = new Client({
   auth: process.env.NOTION_TOKEN,
@@ -50,5 +51,5 @@ export async function apiGetDatabases(
     .flatMap()
     .value();
 
-  res.send(result);
+  res.send(useEmap ? json2emap(result) : result);
 }
