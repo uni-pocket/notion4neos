@@ -2,6 +2,7 @@ import express from "express";
 import _ from "lodash";
 import { Client } from "@notionhq/client";
 import json2emap from "json2emap";
+import { getValueFromProp } from "./notionUtil";
 
 const notionClient = new Client({
   auth: process.env.NOTION_TOKEN,
@@ -12,7 +13,7 @@ export async function apiGetDatabases(
   res: express.Response,
   _next: express.NextFunction
 ) {
-  const { keys, useEmap = true } = req.query;
+  const { keys, includeId = false, useEmap = true } = req.query;
   const { databaseId } = req.params;
 
   if (typeof keys != "string") {
@@ -40,12 +41,12 @@ export async function apiGetDatabases(
                 )}`
               );
           }
-          const value = _.get(prop, [prop.type, 0, "plain_text"], "");
+          const value = getValueFromProp(prop);
           return { key, value };
         })
         .reduce(
           (prev, curr) => ({ ...prev, ...{ [curr.key]: curr.value } }),
-          {}
+          includeId ? { id: page.id } : {}
         );
     })
     .flatMap()
