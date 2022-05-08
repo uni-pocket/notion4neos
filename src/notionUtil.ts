@@ -18,10 +18,28 @@ type NotionPropCheckbox = {
   checkbox: boolean;
 };
 
+type NotionPropSelect = {
+  type: "select";
+  select: string;
+};
+
 type Relation = { id: string };
 type NotionPropRelation = {
   type: "relation";
   relation: Relation;
+};
+
+type File = {
+  name: string;
+  type: "file";
+  file: {
+    url: string;
+    expiry_time: string;
+  };
+};
+type NotionPropFiles = {
+  type: "files";
+  files: File[];
 };
 
 type NotionProp =
@@ -29,12 +47,15 @@ type NotionProp =
   | NotionPropTitle
   | NotionPropNumber
   | NotionPropCheckbox
-  | NotionPropRelation;
+  | NotionPropSelect
+  | NotionPropRelation
+  | NotionPropFiles;
 
 export function getValueFromProp(
   prop: NotionProp
-): string | number | boolean | Relation | undefined {
-  switch (prop.type) {
+): string | number | boolean | Relation | undefined | any {
+  const propType = prop.type;
+  switch (propType) {
     case "rich_text":
       return prop.rich_text.map((data) => data.plain_text).join("");
     case "title":
@@ -43,7 +64,13 @@ export function getValueFromProp(
       return prop.number;
     case "checkbox":
       return prop.checkbox;
+    case "select":
+      return prop.select;
     case "relation":
       return prop.relation;
+    case "files":
+      return prop.files;
+    default:
+      return prop[propType];
   }
 }
