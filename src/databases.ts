@@ -13,30 +13,40 @@ export async function apiGetDatabases(
   res: express.Response,
   _next: express.NextFunction
 ) {
-  const { keys, includeId = false, useEmap = true } = req.query;
+  const {
+    keys: keysRaw,
+    sorts: sortsRaw = "[]",
+    includeId = false,
+    useEmap = true,
+  } = req.query;
   const { databaseId } = req.params;
 
-  if (typeof keys != "string") {
-    throw new Error(`keys is not string. keys=${keys}`);
+  if (typeof keysRaw != "string") {
+    throw new Error(`keys is not string. keys=${keysRaw}`);
   }
+  if (typeof sortsRaw != "string") {
+    throw new Error(`sorts is not string. sort=${sortsRaw}`);
+  }
+  const keys = JSON.parse(keysRaw) as string[];
 
-  const requestKeys = JSON.parse(keys) as string[];
+  const sorts = JSON.parse(sortsRaw);
 
   const response = await notionClient.databases.query({
     database_id: databaseId,
+    sorts: sorts,
   });
 
   const result = _(response.results)
     .map((page) => {
       const properties = _.get(page, "properties", {});
-      return _(requestKeys)
+      return _(keys)
         .map((key) => {
           const prop = _.get(properties, key);
           if (!prop) {
             res
               .status(500)
               .send(
-                `${key} does not exist. requestKeys=${requestKeys}. existKeys=${_.keys(
+                `${key} does not exist. keys=${keys}. existKeys=${_.keys(
                   properties
                 )}`
               );
