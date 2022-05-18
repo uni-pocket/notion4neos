@@ -42,6 +42,8 @@ type NotionPropFiles = {
   files: File[];
 };
 
+type NotionPropFormula = { type: "formula"; formula: { type: string } | any };
+
 type NotionProp =
   | NotionPropRichText
   | NotionPropTitle
@@ -49,7 +51,8 @@ type NotionProp =
   | NotionPropCheckbox
   | NotionPropSelect
   | NotionPropRelation
-  | NotionPropFiles;
+  | NotionPropFiles
+  | NotionPropFormula;
 
 export function getValueFromProp(
   prop: NotionProp
@@ -70,6 +73,8 @@ export function getValueFromProp(
       return prop.relation;
     case "files":
       return prop.files;
+    case "formula":
+      return prop.formula[prop.formula.type];
     default:
       return prop[propType];
   }

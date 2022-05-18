@@ -16,6 +16,7 @@ export async function apiGetDatabases(
   const {
     keys: keysRaw,
     sorts: sortsRaw = "[]",
+    filter: filterRaw = "{}",
     includeId = false,
     useEmap = true,
   } = req.query;
@@ -24,16 +25,22 @@ export async function apiGetDatabases(
   if (typeof keysRaw != "string") {
     throw new Error(`keys is not string. keys=${keysRaw}`);
   }
+  const keys = JSON.parse(keysRaw) as string[];
+
   if (typeof sortsRaw != "string") {
     throw new Error(`sorts is not string. sort=${sortsRaw}`);
   }
-  const keys = JSON.parse(keysRaw) as string[];
-
   const sorts = JSON.parse(sortsRaw);
+
+  if (typeof filterRaw != "string") {
+    throw new Error(`filter is not string. sort=${filterRaw}`);
+  }
+  const filter = JSON.parse(filterRaw);
 
   const response = await notionClient.databases.query({
     database_id: databaseId,
     sorts: sorts,
+    ...(_.size(filter) > 0 ? { filter } : {}),
   });
 
   const result = _(response.results)
