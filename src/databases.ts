@@ -37,13 +37,23 @@ export async function apiGetDatabases(
   }
   const filter = JSON.parse(filterRaw);
 
-  const response = await notionClient.databases.query({
-    database_id: databaseId,
-    sorts: sorts,
-    ...(_.size(filter) > 0 ? { filter } : {}),
-  });
+  let dataList: any[] = [];
+  let next_cursor = undefined;
+  let has_more = true;
 
-  const result = _(response.results)
+  while (has_more) {
+    const response: any = await notionClient.databases.query({
+      database_id: databaseId,
+      sorts: sorts,
+      start_cursor: next_cursor,
+      ...(_.size(filter) > 0 ? { filter } : {}),
+    });
+    has_more = response.has_more;
+    next_cursor = response.next_cursor;
+    dataList = [...dataList, ...response.results];
+  }
+
+  const result = _(dataList)
     .map((page) => {
       const properties = _.get(page, "properties", {});
       return _(keys)
@@ -68,6 +78,13 @@ export async function apiGetDatabases(
     })
     .flatMap()
     .value();
-
-  res.send(useEmap ? json2emap(result) : result);
+  //res.send(result);
+  res.send(
+    useEmap
+      ? _.map(dataList, (page) => {
+          const properties = _.get(page, "properties", {});
+          return _.get(properties, ["Key", "title", 0, "text", "content"]);
+        })
+      : result
+  );
 }
