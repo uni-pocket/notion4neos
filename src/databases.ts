@@ -78,13 +78,6 @@ export async function apiGetDatabases(
     })
     .flatMap()
     .value();
-  //res.send(result);
-  res.send(
-    useEmap
-      ? _.map(dataList, (page) => {
-          const properties = _.get(page, "properties", {});
-          return _.get(properties, ["Key", "title", 0, "text", "content"]);
-        })
-      : result
-  );
+
+  res.send(useEmap ? json2emap(result) : result);
 }
