@@ -1,5 +1,5 @@
 import express from "express";
-import { apiGetDatabases } from "./databases";
+import { apiGetDatabases, apiGetConversionOptionList } from "./databases";
 
 function e(
   path: string,
@@ -23,4 +23,5 @@ function e(
 
 export default function router(app: express.Express) {
   app.get(...e("/api/v1/databases/:databaseId", apiGetDatabases));
+  app.get(...e("/api/v1/conversions/:databaseId", apiGetConversionOptionList));
 }
